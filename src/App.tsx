@@ -302,7 +302,8 @@ function PostList({
   onPageChange: (page: number) => void;
 }) {
   const heading = searchQuery ? `搜索：${searchQuery}` : filter.type === "all" ? home?.title || "首页" : filter.value;
-  const eyebrow = searchQuery ? "搜索" : filter.type === "category" ? "分类" : filter.type === "tag" ? "标签" : "从前有座山";
+  const eyebrow = searchQuery ? "搜索" : filter.type === "category" ? "分类" : filter.type === "tag" ? "标签" : "";
+  const isHomeHeading = !searchQuery && filter.type === "all";
   const subheading = loading
     ? "正在读取 Notion 内容。"
     : searchQuery
@@ -315,7 +316,13 @@ function PostList({
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
       <header className="mb-10 max-w-2xl">
         <div className="mb-3 text-sm font-semibold text-[#0075de]">{eyebrow}</div>
-        <h1 className="text-5xl font-bold leading-none tracking-[-2px] text-[rgba(0,0,0,0.95)] md:text-[64px]">
+        <h1
+          className={`text-[rgba(0,0,0,0.95)] ${
+            isHomeHeading
+              ? "font-serif text-[31px] font-medium leading-[1.12] tracking-[0.02em] md:text-[42px]"
+              : "text-[32px] font-bold leading-none tracking-[-2px] md:text-[38px]"
+          }`}
+        >
           {heading}
         </h1>
         <p className="mt-4 text-lg leading-7 text-[#615d59]">
@@ -395,7 +402,7 @@ function AboutView({ about, loading, error }: { about: AboutPage | null; loading
         <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#f6f5f4] text-2xl">
           <IconMark icon={about?.icon} fallback="@" />
         </div>
-        <h1 className="text-5xl font-bold leading-none tracking-[-2px] text-[rgba(0,0,0,0.95)] md:text-[64px]">
+        <h1 className="text-5xl font-bold leading-none tracking-[-2px] text-[rgba(0,0,0,0.95)] md:text-[40px]">
           {about?.title ?? "关于"}
         </h1>
         {about?.summary ? <p className="mt-4 max-w-2xl text-lg leading-7 text-[#615d59]">{about.summary}</p> : null}

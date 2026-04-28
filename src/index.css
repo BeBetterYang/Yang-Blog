@@ -3,6 +3,7 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "PMingLiU", serif;
   
   --color-brand: #0075de;
   --color-stone-muted: #fdfdfc;
