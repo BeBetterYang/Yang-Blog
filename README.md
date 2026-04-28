@@ -61,6 +61,12 @@ NOTION_CACHE_TTL_MS
 VITE_BLOG_DESCRIPTION
 ```
 
+注意：
+
+- `NOTION_TOKEN` 在 Vercel 中只填 token 本身，不要带 `.env.local` 里的引号。
+- `NOTION_DATABASE_ID` 建议填纯 ID；如果误填成 Notion 数据库链接，当前代码也会自动提取其中的 ID。
+- 如果环境变量是在部署完成后才新增或修改的，需要重新部署一次，旧 deployment 不会自动拿到新值。
+
 然后部署：
 
 ```bash

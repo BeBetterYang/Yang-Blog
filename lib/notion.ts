@@ -1,4 +1,9 @@
-import { Client } from "@notionhq/client";
+import {
+  APIErrorCode,
+  Client,
+  ClientErrorCode,
+  isNotionClientError,
+} from "@notionhq/client";
 import type { AboutPage, BlogIcon, ContentBlock, HomePage, Post, PostDetail } from "../src/types";
 
 type NotionPage = Record<string, any>;
@@ -16,8 +21,10 @@ interface DatabaseCache {
   entries: InternalEntry[];
 }
 
-const notionToken = process.env.NOTION_TOKEN || process.env.NOTION_API_KEY;
-const notionDatabaseId = process.env.NOTION_DATABASE_ID || process.env.NOTION_DB_ID;
+const notionToken = normalizeEnvValue(process.env.NOTION_TOKEN || process.env.NOTION_API_KEY);
+const notionDatabaseId = normalizeDatabaseId(
+  normalizeEnvValue(process.env.NOTION_DATABASE_ID || process.env.NOTION_DB_ID),
+);
 const cacheTtlMs = Number(process.env.NOTION_CACHE_TTL_MS ?? 60_000);
 
 let notion: Client | null = null;
@@ -42,6 +49,45 @@ export function toPublicError(error: unknown) {
       status: error.status,
       body: { error: error.message, code: error.code },
     };
+  }
+
+  if (isNotionClientError(error)) {
+    switch (error.code) {
+      case APIErrorCode.Unauthorized:
+        return {
+          status: 500,
+          body: {
+            error: "NOTION_TOKEN 无效。请检查 Vercel 环境变量是否填入了正确的 integration token，且不要带引号。",
+            code: "NOTION_UNAUTHORIZED",
+          },
+        };
+      case APIErrorCode.RestrictedResource:
+      case APIErrorCode.ObjectNotFound:
+        return {
+          status: 500,
+          body: {
+            error: "NOTION_DATABASE_ID 不正确，或该数据库还没有共享给 Notion integration。",
+            code: "NOTION_DATABASE_ACCESS_ERROR",
+          },
+        };
+      case APIErrorCode.ValidationError:
+      case APIErrorCode.InvalidRequest:
+      case APIErrorCode.InvalidRequestURL:
+        return {
+          status: 500,
+          body: {
+            error: "Notion 配置格式不正确。请检查 NOTION_DATABASE_ID 是否为数据库 ID 或数据源 ID，而不是错误的页面地址。",
+            code: "NOTION_CONFIG_INVALID",
+          },
+        };
+      case APIErrorCode.GatewayTimeout:
+      case APIErrorCode.ServiceUnavailable:
+      case ClientErrorCode.RequestTimeout:
+        return {
+          status: 504,
+          body: { error: "Notion API 请求超时，请稍后重试。", code: "NOTION_TIMEOUT" },
+        };
+    }
   }
 
   console.error(error);
@@ -203,6 +249,35 @@ function getNotionClient() {
   });
 
   return notion;
+}
+
+function normalizeEnvValue(value: string | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
+
+function normalizeDatabaseId(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  const exactIdMatch = value.match(/[0-9a-fA-F]{32}|[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/);
+  if (exactIdMatch) {
+    return exactIdMatch[0];
+  }
+
+  return value;
 }
 
 async function getVisibleEntries(typeValue: "post" | "about") {
