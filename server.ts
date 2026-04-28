@@ -2,8 +2,8 @@ import "dotenv/config";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { sendError } from "./lib/http";
-import { getAboutPage, getHomePage, getPostBySlug, getPublishedPosts, searchPublishedPosts, unlockPost } from "./lib/notion";
+import { sendError } from "./lib/http.js";
+import { getAboutPage, getHomePage, getPostBySlug, getPublishedPosts, searchPublishedPosts, unlockPost } from "./lib/notion.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);

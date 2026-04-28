@@ -1,9 +1,9 @@
-import { assertMethod, sendCachedJson, sendError, sendJson } from "../lib/http";
+import { assertMethod, sendCachedJson, sendError, sendJson } from "../lib/http.js";
 
 export default async function handler(request: any, response: any) {
   try {
     assertMethod(request.method, "GET");
-    const { getHomePage } = await import("../lib/notion");
+    const { getHomePage } = await import("../lib/notion.js");
     const home = await getHomePage();
 
     if (!home) {

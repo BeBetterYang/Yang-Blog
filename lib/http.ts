@@ -1,5 +1,3 @@
-import { APIErrorCode, ClientErrorCode, isNotionClientError } from "@notionhq/client";
-
 type JsonResponse = {
   status: (code: number) => JsonResponse;
   setHeader: (name: string, value: string) => void;
@@ -63,43 +61,42 @@ function toPublicError(error: unknown) {
     };
   }
 
-  if (isNotionClientError(error)) {
-    switch (error.code) {
-      case APIErrorCode.Unauthorized:
-        return {
-          status: 500,
-          body: {
-            error: "NOTION_TOKEN 无效。请检查 Vercel 环境变量是否填入了正确的 integration token，且不要带引号。",
-            code: "NOTION_UNAUTHORIZED",
-          },
-        };
-      case APIErrorCode.RestrictedResource:
-      case APIErrorCode.ObjectNotFound:
-        return {
-          status: 500,
-          body: {
-            error: "NOTION_DATABASE_ID 不正确，或该数据库还没有共享给 Notion integration。",
-            code: "NOTION_DATABASE_ACCESS_ERROR",
-          },
-        };
-      case APIErrorCode.ValidationError:
-      case APIErrorCode.InvalidRequest:
-      case APIErrorCode.InvalidRequestURL:
-        return {
-          status: 500,
-          body: {
-            error: "Notion 配置格式不正确。请检查 NOTION_DATABASE_ID 是否为数据库 ID 或数据源 ID，而不是错误的页面地址。",
-            code: "NOTION_CONFIG_INVALID",
-          },
-        };
-      case APIErrorCode.GatewayTimeout:
-      case APIErrorCode.ServiceUnavailable:
-      case ClientErrorCode.RequestTimeout:
-        return {
-          status: 504,
-          body: { error: "Notion API 请求超时，请稍后重试。", code: "NOTION_TIMEOUT" },
-        };
-    }
+  const notionErrorCode = readErrorCode(error);
+  switch (notionErrorCode) {
+    case "unauthorized":
+      return {
+        status: 500,
+        body: {
+          error: "NOTION_TOKEN 无效。请检查 Vercel 环境变量是否填入了正确的 integration token，且不要带引号。",
+          code: "NOTION_UNAUTHORIZED",
+        },
+      };
+    case "restricted_resource":
+    case "object_not_found":
+      return {
+        status: 500,
+        body: {
+          error: "NOTION_DATABASE_ID 不正确，或该数据库还没有共享给 Notion integration。",
+          code: "NOTION_DATABASE_ACCESS_ERROR",
+        },
+      };
+    case "validation_error":
+    case "invalid_request":
+    case "invalid_request_url":
+      return {
+        status: 500,
+        body: {
+          error: "Notion 配置格式不正确。请检查 NOTION_DATABASE_ID 是否为数据库 ID 或数据源 ID，而不是错误的页面地址。",
+          code: "NOTION_CONFIG_INVALID",
+        },
+      };
+    case "gateway_timeout":
+    case "service_unavailable":
+    case "notionhq_client_request_timeout":
+      return {
+        status: 504,
+        body: { error: "Notion API 请求超时，请稍后重试。", code: "NOTION_TIMEOUT" },
+      };
   }
 
   console.error(error);
@@ -135,4 +132,16 @@ function extractErrorMessage(error: unknown) {
   }
 
   return "Unknown error";
+}
+
+function readErrorCode(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    typeof (error as { code?: unknown }).code === "string"
+  ) {
+    return (error as { code: string }).code;
+  }
+
+  return "";
 }

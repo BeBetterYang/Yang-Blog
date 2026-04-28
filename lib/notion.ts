@@ -4,7 +4,7 @@ import {
   ClientErrorCode,
   isNotionClientError,
 } from "@notionhq/client";
-import type { AboutPage, BlogIcon, ContentBlock, HomePage, Post, PostDetail } from "../src/types";
+import type { AboutPage, BlogIcon, ContentBlock, HomePage, Post, PostDetail } from "../src/types.js";
 
 type NotionPage = Record<string, any>;
 type NotionProperty = Record<string, any> | undefined;
