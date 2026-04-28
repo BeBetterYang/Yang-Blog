@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-brand: #0075de;
+  --color-stone-muted: #fdfdfc;
+  
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #ffffff;
+  }
+
+  body {
+    @apply font-sans bg-white antialiased;
+    color: rgba(0, 0, 0, 0.95);
+    font-feature-settings: "lnum", "locl";
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline: 2px solid #097fe8;
+    outline-offset: 2px;
+  }
+}
