@@ -1,4 +1,5 @@
 # Yang‘s Blog
+预览界面：https://yang-blog-omega.vercel.app/
 
 一个使用 Notion 数据库作为内容后端、Vite + React 作为前端、Vercel 托管的极简博客。
 
@@ -14,7 +15,6 @@
 | `summary` | 摘要 |
 | `category` | 分类，导航里的“分类”直接读取这里的值 |
 | `tags` | 标签，导航里的“标签”直接读取这里的值 |
-| `slug` | 文章详情 URL 标识 |
 | `date` | 发布日期 |
 | `password` | 不为空时，前端需要输入密码后才能查看正文 |
 | `icon` | emoji 或图片 URL；也可以直接使用 Notion 页面 icon |
